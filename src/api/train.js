@@ -30,3 +30,11 @@ export function deleteTrain(data) {
     data
   })
 }
+
+export function insertTrain(data) {
+  return request({
+    url: '/TrainInfoController/addTrain',
+    method: 'post',
+    data
+  })
+}

@@ -40,6 +40,13 @@ const actions = {
     })
   },
 
+  logout({ commit }) {
+    return new Promise(resolve => {
+      removeToken()
+      commit('RESET_STATE')
+      resolve()
+    })
+  },
   // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {

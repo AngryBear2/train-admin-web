@@ -17,27 +17,27 @@
           append-to-body
         >
           <el-form ref="insertStation" :model="insertStation" :rules="stationRules" label-width="120px">
-            <el-form-item label="站点名" prop="station_name">
-              <el-input v-model="insertStation.station_name" size="medium" style="width:200px" />
+            <el-form-item label="站点名" prop="stationName">
+              <el-input v-model="insertStation.stationName" size="medium" style="width:200px" />
             </el-form-item>
             <el-form-item label="是否为终点">
               <el-radio v-model="insertStation.type" label="是">是</el-radio>
               <el-radio v-model="insertStation.type" label="否">否</el-radio>
             </el-form-item>
-            <el-form-item label="到达日期类型" prop="arrive_day_type">
-              <el-select v-model="insertStation.arrive_day_type" placeholder="请选择到达日期类型">
+            <el-form-item label="到达日期类型" prop="arriveDayType">
+              <el-select v-model="insertStation.arriveDayType" placeholder="请选择到达日期类型">
                 <el-option label="当日到达" value="当日到达" />
                 <el-option label="次日到达" value="次日到达" />
               </el-select>
             </el-form-item>
-            <el-form-item label="到达时间" prop="arrive_time">
-              <el-time-picker v-model="insertStation.arrive_time" placeholder="选择时间" format="HH:mm" />
+            <el-form-item label="到达时间" prop="arriveTime">
+              <el-time-picker v-model="insertStation.arriveTime" placeholder="选择时间" format="HH:mm" />
             </el-form-item>
-            <el-form-item v-if="insertStation.type==='否'" prop="start_time" label="发车时间">
-              <el-time-picker v-model="insertStation.start_time" placeholder="选择时间" format="HH:mm" />
+            <el-form-item v-if="insertStation.type==='否'" prop="startTime" label="发车时间">
+              <el-time-picker v-model="insertStation.startTime" placeholder="选择时间" format="HH:mm" />
             </el-form-item>
-            <el-form-item v-if="insertStation.type==='否'" prop="running_time" label="距离下一站时间">
-              <el-time-picker v-model="insertStation.running_time" placeholder="选择时间" format="HH:mm" />
+            <el-form-item v-if="insertStation.type==='否'" prop="runningTime" label="距离下一站时间">
+              <el-time-picker v-model="insertStation.runningTime" placeholder="选择时间" format="HH:mm" />
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -76,11 +76,11 @@
           <el-form-item label="站点列表">
             <el-button type="primary" @click="showAddStation(index)">添加站点</el-button>
             <el-table :data="insertTrain.tParkingStations" highlight-current-row>
-              <el-table-column prop="station_name" label="站点名" width="150px" />
-              <el-table-column prop="arrive_day_type" label="到达日期类型" width="150px" />
-              <el-table-column prop="arrive_time" label="到达时间" width="150px" />
-              <el-table-column prop="start_time" label="发车时间" width="150px" />
-              <el-table-column prop="running_time" label="距离下一站时间" width="150px" />
+              <el-table-column prop="stationName" label="站点名" width="150px" />
+              <el-table-column prop="arriveDayType" label="到达日期类型" width="150px" />
+              <el-table-column prop="arriveTime" label="到达时间" width="150px" />
+              <el-table-column prop="startTime" label="发车时间" width="150px" />
+              <el-table-column prop="runningTime" label="距离下一站时间" width="150px" />
               <el-table-column label="插入" width="150px">
                 <template slot-scope="scope">
                   <el-button
@@ -137,7 +137,7 @@
 </template>
 
 <script>
-import { allTrain, selectByTId, deleteTrain } from '@/api/train'
+import { allTrain, selectByTId, deleteTrain, insertTrain } from '@/api/train'
 const _ = require('lodash')
 const dayjs = require('dayjs')
 export default {
@@ -157,11 +157,11 @@ export default {
       },
       insertStation: {
         tId: '',
-        station_name: '',
-        arrive_day_type: '',
-        arrive_time: '',
-        start_time: '',
-        running_time: '',
+        stationName: '',
+        arriveDayType: '',
+        arriveTime: '',
+        startTime: '',
+        runningTime: '',
         type: '否'
       },
       outerVisible: false,
@@ -180,19 +180,19 @@ export default {
       showList: false,
       tId: '',
       stationRules: {
-        station_name: [
+        stationName: [
           { required: true, message: '请输入站点名', trigger: 'blur' }
         ],
-        arrive_day_type: [
+        arriveDayType: [
           { required: true, message: '请选择到达日期类型', trigger: 'change' }
         ],
-        arrive_time: [
+        arriveTime: [
           { type: 'date', required: true, message: '请选择到达时间', trigger: 'change' }
         ],
-        start_time: [
+        startTime: [
           { type: 'date', required: true, message: '请选择发车时间', trigger: 'change' }
         ],
-        running_time: [
+        runningTime: [
           { type: 'date', required: true, message: '请选择距离下一站时间', trigger: 'change' }
         ]
       },
@@ -226,7 +226,16 @@ export default {
         if (valid) {
           this.insertTrain.tStartTime = this.formatTime(this.insertTrain.tstarttime)
           this.insertTrain.tEndTime = this.formatTime(this.insertTrain.tendtime)
-          console.log(this.insertTrain)
+          insertTrain(this.insertTrain).then((response) => {
+            this.$message({
+              message: '添加成功',
+              type: 'success'
+            })
+            this.closeTrainDialog()
+            this.showAll()
+          }).catch((error) => {
+            console.error(error)
+          })
         } else {
           console.log('error submit!!')
           return false
@@ -239,12 +248,12 @@ export default {
     },
     closeStationDialog() {
       this.insertStation.tId = ''
-      this.insertStation.station_name = ''
-      this.insertStation.arrive_day_type = ''
-      this.insertStation.arrive_time = ''
+      this.insertStation.stationName = ''
+      this.insertStation.arriveDayType = ''
+      this.insertStation.arriveTime = ''
       this.insertStation.tstartStation = ''
-      this.insertStation.start_time = ''
-      this.insertStation.running_time = ''
+      this.insertStation.startTime = ''
+      this.insertStation.runningTime = ''
       this.insertStation.type = '否'
       this.index = -1
       this.innerVisible = false
@@ -263,13 +272,13 @@ export default {
             this.index = this.insertTrain.tParkingStations.length
           }
           if (this.insertStation.type === '否') {
-            this.insertStation.start_time = this.formatTime(this.insertStation.start_time)
-            this.insertStation.running_time = this.formatTime(this.insertStation.running_time)
+            this.insertStation.startTime = this.formatTime(this.insertStation.startTime)
+            this.insertStation.runningTime = this.formatTime(this.insertStation.runningTime)
           } else {
-            this.insertStation.start_time = '---'
-            this.insertStation.running_time = '---'
+            this.insertStation.startTime = '---'
+            this.insertStation.runningTime = '---'
           }
-          this.insertStation.arrive_time = this.formatTime(this.insertStation.arrive_time)
+          this.insertStation.arriveTime = this.formatTime(this.insertStation.arriveTime)
           this.insertStation.tId = this.insertTrain.tid
           const tempStation = _.clone(this.insertStation)
           this.insertTrain.tParkingStations.splice(this.index, 0, tempStation)
