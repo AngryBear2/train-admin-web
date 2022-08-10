@@ -12,7 +12,7 @@
         </span>
         <el-input
           ref="username"
-          v-model="loginForm.username"
+          v-model="loginForm.uname"
           placeholder="Username"
           name="username"
           type="text"
@@ -28,7 +28,7 @@
         <el-input
           :key="passwordType"
           ref="password"
-          v-model="loginForm.password"
+          v-model="loginForm.upassword"
           :type="passwordType"
           placeholder="Password"
           name="password"
@@ -43,43 +43,37 @@
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
-      </div>
-
     </el-form>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
 
 export default {
   name: 'Login',
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
+      if (value.length === 0) {
+        callback(new Error('用户名不能为空'))
       } else {
         callback()
       }
     }
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
+      if (value.length === 0) {
+        callback(new Error('密码不能为空'))
       } else {
         callback()
       }
     }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        uname: '',
+        upassword: ''
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        uname: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        upassword: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       loading: false,
       passwordType: 'password',
