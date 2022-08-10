@@ -16,27 +16,27 @@
           :visible.sync="innerVisible"
           append-to-body
         >
-          <el-form ref="tParkingStations" :model="insertStation" label-width="120px">
-            <el-form-item label="站点名">
+          <el-form ref="insertStation" :model="insertStation" :rules="stationRules" label-width="120px">
+            <el-form-item label="站点名" prop="station_name">
               <el-input v-model="insertStation.station_name" size="medium" style="width:200px" />
             </el-form-item>
             <el-form-item label="是否为终点">
               <el-radio v-model="insertStation.type" label="是">是</el-radio>
               <el-radio v-model="insertStation.type" label="否">否</el-radio>
             </el-form-item>
-            <el-form-item label="到达日期类型">
+            <el-form-item label="到达日期类型" prop="arrive_day_type">
               <el-select v-model="insertStation.arrive_day_type" placeholder="请选择到达日期类型">
                 <el-option label="当日到达" value="当日到达" />
                 <el-option label="次日到达" value="次日到达" />
               </el-select>
             </el-form-item>
-            <el-form-item label="到达时间">
+            <el-form-item label="到达时间" prop="arrive_time">
               <el-time-picker v-model="insertStation.arrive_time" placeholder="选择时间" format="HH:mm" />
             </el-form-item>
-            <el-form-item v-if="insertStation.type==='否'" label="发车时间">
+            <el-form-item v-if="insertStation.type==='否'" prop="start_time" label="发车时间">
               <el-time-picker v-model="insertStation.start_time" placeholder="选择时间" format="HH:mm" />
             </el-form-item>
-            <el-form-item v-if="insertStation.type==='否'" label="距离下一站时间">
+            <el-form-item v-if="insertStation.type==='否'" prop="running_time" label="距离下一站时间">
               <el-time-picker v-model="insertStation.running_time" placeholder="选择时间" format="HH:mm" />
             </el-form-item>
           </el-form>
@@ -45,29 +45,29 @@
             <el-button type="primary" @click="pushStation()">添加</el-button>
           </div>
         </el-dialog>
-        <el-form ref="insertTrain" :model="insertTrain" label-width="80px" inline>
-          <el-form-item label="车次">
+        <el-form ref="insertTrain" :rules="trainRules" :model="insertTrain" label-width="80px" inline>
+          <el-form-item label="车次" prop="tid">
             <el-input v-model="insertTrain.tid" />
           </el-form-item>
-          <el-form-item label="类型">
+          <el-form-item label="类型" prop="ttype">
             <el-select v-model="insertTrain.ttype" placeholder="请选择火车类型">
               <el-option label="动车" value="动车" />
               <el-option label="快速" value="快速" />
               <el-option label="直特" value="直特" />
             </el-select>
           </el-form-item>
-          <el-form-item label="起始站">
+          <el-form-item label="起始站" prop="tstartStation">
             <el-input v-model="insertTrain.tstartStation" />
           </el-form-item>
-          <el-form-item label="终点站">
+          <el-form-item label="终点站" prop="tendStation">
             <el-input v-model="insertTrain.tendStation" />
           </el-form-item>
-          <el-form-item label="起止时间">
-            <el-time-picker v-model="insertTrain.tStarttime" placeholder="选择时间" format="HH:mm" />
+          <el-form-item label="起止时间" required>
+            <el-time-picker v-model="insertTrain.tstarttime" placeholder="选择时间" format="HH:mm" />
             -
             <el-time-picker v-model="insertTrain.tendtime" placeholder="选择时间" format="HH:mm" />
           </el-form-item>
-          <el-form-item label="到达日期">
+          <el-form-item label="到达日期" prop="tarrivalTime">
             <el-select v-model="insertTrain.tarrivalTime" placeholder="请选择到达日期">
               <el-option label="当日到达" value="当日到达" />
               <el-option label="次日到达" value="次日到达" />
@@ -102,8 +102,8 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="outerVisible = false">取 消</el-button>
-          <el-button type="primary" @click="innerVisible = true">提 交</el-button>
+          <el-button @click="closeTrainDialog()">取 消</el-button>
+          <el-button type="primary" @click="addTrain()">提 交</el-button>
         </div>
       </el-dialog>
 
@@ -139,6 +139,7 @@
 <script>
 import { allTrain, selectByTId, deleteTrain } from '@/api/train'
 const _ = require('lodash')
+const dayjs = require('dayjs')
 export default {
   name: 'Dashboard',
   data() {
@@ -177,7 +178,41 @@ export default {
         }
       ],
       showList: false,
-      tId: ''
+      tId: '',
+      stationRules: {
+        station_name: [
+          { required: true, message: '请输入站点名', trigger: 'blur' }
+        ],
+        arrive_day_type: [
+          { required: true, message: '请选择到达日期类型', trigger: 'change' }
+        ],
+        arrive_time: [
+          { type: 'date', required: true, message: '请选择到达时间', trigger: 'change' }
+        ],
+        start_time: [
+          { type: 'date', required: true, message: '请选择发车时间', trigger: 'change' }
+        ],
+        running_time: [
+          { type: 'date', required: true, message: '请选择距离下一站时间', trigger: 'change' }
+        ]
+      },
+      trainRules: {
+        tid: [
+          { required: true, message: '请输入车次', trigger: 'blur' }
+        ],
+        tstartStation: [
+          { required: true, message: '请输入始发站', trigger: 'blur' }
+        ],
+        tendStation: [
+          { required: true, message: '请输入终点站', trigger: 'blur' }
+        ],
+        tarrivalTime: [
+          { required: true, message: '请输入到达日期类型', trigger: 'blur' }
+        ],
+        ttype: [
+          { required: true, message: '请选择列车类型', trigger: 'change' }
+        ]
+      }
 
     }
   },
@@ -186,6 +221,22 @@ export default {
   },
   methods:
   {
+    addTrain() {
+      this.$refs['insertTrain'].validate((valid) => {
+        if (valid) {
+          this.insertTrain.tStartTime = this.formatTime(this.insertTrain.tstarttime)
+          this.insertTrain.tEndTime = this.formatTime(this.insertTrain.tendtime)
+          console.log(this.insertTrain)
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    formatTime(time) {
+      const createTime = dayjs(time)
+      return createTime.format('HH:mm')
+    },
     closeStationDialog() {
       this.insertStation.tId = ''
       this.insertStation.station_name = ''
@@ -198,16 +249,38 @@ export default {
       this.index = -1
       this.innerVisible = false
     },
+    closeTrainDialog() {
+      this.$refs['insertTrain'].resetFields()
+      this.insertTrain.tstarttime = ''
+      this.insertTrain.tendtime = ''
+      this.insertTrain.tParkingStations = []
+      this.outerVisible = false
+    },
     pushStation() {
-      if (this.index === -1) {
-        this.index = this.insertTrain.tParkingStations.length
-      }
-      const tempStation = _.clone(this.insertStation)
-      this.insertTrain.tParkingStations.splice(this.index, 0, tempStation)
-      this.closeStationDialog()
+      this.$refs['insertStation'].validate((valid) => {
+        if (valid) {
+          if (this.index === -1) {
+            this.index = this.insertTrain.tParkingStations.length
+          }
+          if (this.insertStation.type === '否') {
+            this.insertStation.start_time = this.formatTime(this.insertStation.start_time)
+            this.insertStation.running_time = this.formatTime(this.insertStation.running_time)
+          } else {
+            this.insertStation.start_time = '---'
+            this.insertStation.running_time = '---'
+          }
+          this.insertStation.arrive_time = this.formatTime(this.insertStation.arrive_time)
+          this.insertStation.tId = this.insertTrain.tid
+          const tempStation = _.clone(this.insertStation)
+          this.insertTrain.tParkingStations.splice(this.index, 0, tempStation)
+          this.closeStationDialog()
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
     },
     deleteAddStation(index) {
-      console.log(this.insertTrain.tParkingStations)
       _.pullAt(this.insertTrain.tParkingStations, index)
       this.$message({
         message: '删除成功',
